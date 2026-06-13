@@ -22,9 +22,9 @@ interface RecommendationPanelProps {
 }
 
 function statusClasses(status: 'good' | 'watch' | 'action') {
-  if (status === 'good') return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100';
-  if (status === 'watch') return 'border-amber-500/30 bg-amber-500/10 text-amber-100';
-  return 'border-rose-500/30 bg-rose-500/10 text-rose-100';
+  if (status === 'good') return 'border-emerald-200 bg-emerald-50 text-emerald-800';
+  if (status === 'watch') return 'border-amber-200 bg-amber-50 text-amber-800';
+  return 'border-rose-200 bg-rose-50 text-rose-800';
 }
 
 function nutrientStatusLabel(status: 'low' | 'medium' | 'high' | 'unknown') {
@@ -52,9 +52,9 @@ export function RecommendationPanel({
 
   return (
     <section className="mb-8 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-      <div className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-stone-200 bg-white p-6">
         <div className="flex items-center gap-3">
-          <Sprout className="h-5 w-5 text-emerald-300" />
+          <Sprout className="h-5 w-5 text-emerald-600" />
           <div>
             <h2 className="text-xl font-semibold text-stone-900">सलाह प्रणाली</h2>
             <p className="text-sm text-stone-500">
@@ -66,16 +66,16 @@ export function RecommendationPanel({
         <div className="mt-5 flex flex-wrap gap-2">
           <button
             onClick={() => setPondType('natural')}
-            className={`rounded-md px-3 py-2 text-sm font-medium ${
-              pondType === 'natural' ? 'bg-emerald-600 text-white' : 'bg-stone-50 text-stone-700 border border-stone-200'
+            className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              pondType === 'natural' ? 'bg-emerald-600 text-white' : 'border border-stone-300 bg-white text-stone-700 hover:bg-stone-100'
             }`}
           >
             प्राकृतिक तालाब
           </button>
           <button
             onClick={() => setPondType('managed')}
-            className={`rounded-md px-3 py-2 text-sm font-medium ${
-              pondType === 'managed' ? 'bg-cyan-600 text-white' : 'bg-stone-50 text-stone-700 border border-stone-200'
+            className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              pondType === 'managed' ? 'bg-emerald-600 text-white' : 'border border-stone-300 bg-white text-stone-700 hover:bg-stone-100'
             }`}
           >
             मानव-निर्मित तालाब
@@ -93,7 +93,7 @@ export function RecommendationPanel({
 
         <div className="mt-6 rounded-md border border-stone-200 bg-stone-50 p-4">
           <div className="flex items-center gap-2 text-stone-800">
-            <AlertTriangle className="h-4 w-4 text-amber-300" />
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
             <p className="text-sm font-semibold">महत्वपूर्ण सीमा</p>
           </div>
           <p className="mt-2 text-sm leading-6 text-stone-600">
@@ -103,9 +103,9 @@ export function RecommendationPanel({
       </div>
 
       <div className="space-y-6">
-        <div className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-stone-200 bg-white p-6">
           <div className="flex items-center gap-3">
-            <Map className="h-5 w-5 text-cyan-300" />
+            <Map className="h-5 w-5 text-sky-600" />
             <div>
               <h2 className="text-xl font-semibold text-stone-900">क्षेत्रफल आधारित पोषक योजना</h2>
               <p className="text-sm text-stone-500">
@@ -154,7 +154,7 @@ export function RecommendationPanel({
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-stone-500">अनुमानित मात्रा</p>
-                    <p className="text-lg font-semibold text-cyan-300">{(item.perHectareKg * areaHa).toFixed(1)} kg</p>
+                    <p className="text-lg font-semibold text-emerald-700">{(item.perHectareKg * areaHa).toFixed(1)} kg</p>
                     <p className="text-xs text-stone-400">{item.perHectareKg} kg/ha आधार</p>
                   </div>
                 </div>
@@ -167,9 +167,9 @@ export function RecommendationPanel({
           </p>
         </div>
 
-        <div className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-stone-200 bg-white p-6">
           <div className="flex items-center gap-3">
-            <Leaf className="h-5 w-5 text-lime-300" />
+            <Leaf className="h-5 w-5 text-emerald-600" />
             <div>
           <h2 className="text-xl font-semibold text-stone-900">संदर्भ नोट्स</h2>
               <p className="text-sm text-stone-500">
@@ -200,7 +200,7 @@ export function RecommendationPanel({
 
           <div className="mt-4 rounded-md border border-stone-200 bg-stone-50 p-4">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               <p className="text-sm font-semibold text-stone-900">उद्देश्य</p>
             </div>
             <p className="mt-2 text-sm text-stone-500">

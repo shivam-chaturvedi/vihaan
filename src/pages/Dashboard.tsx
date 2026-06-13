@@ -44,7 +44,7 @@ interface CompletedMeasurement {
 }
 
 function formatMetric(value: number | null, digits = 2) {
-  return value === null ? 'N/A' : value.toFixed(digits);
+  return value === null ? '—' : value.toFixed(digits);
 }
 
 function formatCountdown(ms: number) {
@@ -52,6 +52,15 @@ function formatCountdown(ms: number) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function SectionHeading({ icon, title }: { icon: React.ReactNode; title: string }) {
+  return (
+    <div className="mb-4 flex items-center gap-2">
+      {icon}
+      <h2 className="text-lg font-semibold text-stone-900">{title}</h2>
+    </div>
+  );
 }
 
 export function Dashboard() {
@@ -154,9 +163,9 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+      <div className="flex min-h-[70vh] items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 text-emerald-600 animate-spin mx-auto mb-4" />
+          <Loader2 className="mx-auto mb-4 h-10 w-10 animate-spin text-emerald-600" />
           <p className="text-stone-500">लाइव डेटा लोड हो रहा है...</p>
         </div>
       </div>
@@ -165,120 +174,121 @@ export function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4">
-        <div className="bg-white border border-rose-200 rounded-lg p-6 max-w-md shadow-sm">
-          <div className="flex items-center mb-4">
-            <AlertCircle className="h-6 w-6 text-rose-500 mr-2" />
-            <h2 className="text-xl font-semibold text-rose-700">डेटा लोड नहीं हुआ</h2>
+      <div className="flex min-h-[70vh] items-center justify-center px-4">
+        <div className="max-w-md rounded-xl border border-rose-200 bg-rose-50 p-6">
+          <div className="mb-3 flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-rose-600" />
+            <h2 className="text-lg font-semibold text-rose-700">डेटा लोड नहीं हुआ</h2>
           </div>
-          <p className="text-rose-700 mb-4">{error}</p>
-          <p className="text-sm text-rose-600">
-            Firebase कनेक्शन और डिवाइस डेटा भेज रहा है या नहीं, यह जाँचें।
-          </p>
+          <p className="text-sm text-rose-700">{error}</p>
+          <p className="mt-3 text-sm text-rose-600">Firebase कनेक्शन और डिवाइस डेटा भेज रहा है या नहीं, यह जाँचें।</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-3xl font-semibold text-stone-900">Project Pragya</h1>
-                  {latestFilteredLiveReading && (
-                    <div className="flex items-center gap-2 text-emerald-600">
-                      <Radio className="h-4 w-4 animate-pulse" />
-                      <span className="text-xs font-semibold">डिवाइस लाइव</span>
-                    </div>
-                  )}
-                </div>
-                {latestFilteredLiveReading && (
-                  <p className="text-sm text-stone-500 mt-2">
-                    अंतिम लाइव डेटा: {formatTime(latestFilteredLiveReading.ts, latestFilteredLiveReading.ts)}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-wrap gap-3 items-center">
-                {deviceIds.length > 0 && (
-                  <select
-                    value={selectedDevice}
-                    onChange={(e) => setSelectedDevice(e.target.value)}
-                    className="h-10 rounded-md border border-stone-200 bg-white px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  >
-                    <option value="All">सभी डिवाइस</option>
-                    {deviceIds.map((id) => (
-                      <option key={id} value={id}>
-                        {id}
-                      </option>
-                    ))}
-                  </select>
-                )}
-                <button
-                  onClick={handleStartMeasurement}
-                  disabled={measurementInProgress}
-                  className="inline-flex h-10 items-center rounded-md bg-emerald-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:bg-stone-300 disabled:text-stone-500"
-                >
-                  {measurementComplete ? <TimerReset className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
-                  {measurementStartedAt ? (measurementInProgress ? 'मापन जारी है...' : 'नई माप शुरू करें') : 'मापन शुरू करें'}
-                </button>
-                <button
-                  onClick={handleExport}
-                  disabled={resultReadings.length === 0}
-                  className="inline-flex h-10 items-center rounded-md bg-stone-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-stone-800 disabled:bg-stone-300 disabled:text-stone-500"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  परिणाम डाउनलोड करें
-                </button>
-              </div>
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
+      <section className="rounded-xl border border-stone-200 bg-white p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-semibold tracking-tight text-stone-900">डैशबोर्ड</h1>
+              {latestFilteredLiveReading && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                  <Radio className="h-3.5 w-3.5 animate-pulse" />
+                  डिवाइस लाइव
+                </span>
+              )}
             </div>
+            {latestFilteredLiveReading && (
+              <p className="mt-2 text-sm text-stone-500">
+                अंतिम लाइव डेटा: {formatTime(latestFilteredLiveReading.ts, latestFilteredLiveReading.ts)}
+              </p>
+            )}
+          </div>
 
-            <div className="mt-6 grid gap-3 md:grid-cols-3">
-              <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
-                <p className="text-xs uppercase tracking-wide text-stone-500">डिवाइस</p>
-                <p className="mt-2 text-lg font-semibold text-stone-900">{latestFilteredLiveReading?.deviceId ?? latestFilteredReading?.deviceId ?? 'No device'}</p>
-              </div>
-              <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
-                <p className="text-xs uppercase tracking-wide text-stone-500">मापन स्थिति</p>
-                <div className="mt-2 flex items-center gap-2">
-                  {measurementInProgress ? (
-                    <>
-                      <Radio className="h-5 w-5 animate-pulse text-amber-400" />
-                      <p className="text-lg font-semibold text-stone-900">{formatCountdown((measurementEndsAt ?? nowMs) - nowMs)} बाकी</p>
-                    </>
-                  ) : measurementComplete ? (
-                    <>
-                      <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                      <p className="text-lg font-semibold text-stone-900">1 मिनट की माप तैयार</p>
-                    </>
-                  ) : (
-                    <>
-                      <ShieldAlert className="h-5 w-5 text-cyan-400" />
-                      <p className="text-lg font-semibold text-stone-900">शुरू होने की प्रतीक्षा</p>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
-                <p className="text-xs uppercase tracking-wide text-stone-500">कैप्चर रीडिंग</p>
-                <p className="mt-2 text-lg font-semibold text-stone-900">{measurementReadings.length}</p>
-              </div>
-            </div>
-          </section>
+          <div className="flex flex-wrap items-center gap-3">
+            {deviceIds.length > 0 && (
+              <select
+                value={selectedDevice}
+                onChange={(e) => setSelectedDevice(e.target.value)}
+                className="h-10 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="All">सभी डिवाइस</option>
+                {deviceIds.map((id) => (
+                  <option key={id} value={id}>
+                    {id}
+                  </option>
+                ))}
+              </select>
+            )}
+            <button
+              onClick={handleStartMeasurement}
+              disabled={measurementInProgress}
+              className="inline-flex h-10 items-center rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:bg-stone-200 disabled:text-stone-400"
+            >
+              {measurementComplete ? <TimerReset className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
+              {measurementStartedAt ? (measurementInProgress ? 'मापन जारी है...' : 'नई माप शुरू करें') : 'मापन शुरू करें'}
+            </button>
+            <button
+              onClick={handleExport}
+              disabled={resultReadings.length === 0}
+              className="inline-flex h-10 items-center rounded-lg border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-100 disabled:border-stone-200 disabled:text-stone-300"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              परिणाम डाउनलोड करें
+            </button>
+          </div>
         </div>
 
+        <div className="mt-6 grid gap-3 md:grid-cols-3">
+          <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
+            <p className="text-xs uppercase tracking-wide text-stone-400">डिवाइस</p>
+            <p className="mt-2 text-lg font-semibold text-stone-900">
+              {latestFilteredLiveReading?.deviceId ?? latestFilteredReading?.deviceId ?? '—'}
+            </p>
+          </div>
+          <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
+            <p className="text-xs uppercase tracking-wide text-stone-400">मापन स्थिति</p>
+            <div className="mt-2 flex items-center gap-2">
+              {measurementInProgress ? (
+                <>
+                  <Radio className="h-5 w-5 animate-pulse text-amber-500" />
+                  <p className="text-lg font-semibold text-stone-900">
+                    {formatCountdown((measurementEndsAt ?? nowMs) - nowMs)} बाकी
+                  </p>
+                </>
+              ) : measurementComplete ? (
+                <>
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                  <p className="text-lg font-semibold text-stone-900">1 मिनट की माप तैयार</p>
+                </>
+              ) : (
+                <>
+                  <ShieldAlert className="h-5 w-5 text-sky-600" />
+                  <p className="text-lg font-semibold text-stone-900">शुरू होने की प्रतीक्षा</p>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
+            <p className="text-xs uppercase tracking-wide text-stone-400">कैप्चर रीडिंग</p>
+            <p className="mt-2 text-lg font-semibold text-stone-900">{measurementReadings.length}</p>
+          </div>
+        </div>
+      </section>
+
+      <div className="mt-8">
         {!measurementStartedAt ? (
-          <div className="mx-auto max-w-2xl rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
+          <div className="mx-auto max-w-2xl rounded-xl border border-stone-200 bg-white p-6">
             <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-full bg-emerald-50 p-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
                 <Play className="h-5 w-5 text-emerald-600" />
               </div>
               <div>
-                <h2 className="text-2xl font-semibold text-stone-900">मापन शुरू करें</h2>
+                <h2 className="text-xl font-semibold text-stone-900">मापन शुरू करें</h2>
                 <p className="text-sm text-stone-500">केवल जरूरी जानकारी भरें</p>
               </div>
             </div>
@@ -292,7 +302,7 @@ export function Dashboard() {
                   step="0.1"
                   value={area}
                   onChange={(e) => setArea(e.target.value)}
-                  className="mt-2 h-11 w-full rounded-md border border-stone-200 bg-white px-3 text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="mt-2 h-11 w-full rounded-lg border border-stone-300 bg-white px-3 text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </label>
 
@@ -301,7 +311,7 @@ export function Dashboard() {
                 <select
                   value={areaUnit}
                   onChange={(e) => setAreaUnit(e.target.value as AreaUnit)}
-                  className="mt-2 h-11 rounded-md border border-stone-200 bg-white px-3 text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="mt-2 h-11 rounded-lg border border-stone-300 bg-white px-3 text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="ha">हेक्टेयर</option>
                   <option value="acre">एकड़</option>
@@ -314,16 +324,20 @@ export function Dashboard() {
               <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={() => setPondType('natural')}
-                  className={`rounded-md px-4 py-2 text-sm font-medium ${
-                    pondType === 'natural' ? 'bg-emerald-600 text-white' : 'border border-stone-200 bg-stone-50 text-stone-700'
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    pondType === 'natural'
+                      ? 'bg-emerald-600 text-white'
+                      : 'border border-stone-300 bg-white text-stone-700 hover:bg-stone-100'
                   }`}
                 >
                   प्राकृतिक
                 </button>
                 <button
                   onClick={() => setPondType('managed')}
-                  className={`rounded-md px-4 py-2 text-sm font-medium ${
-                    pondType === 'managed' ? 'bg-emerald-600 text-white' : 'border border-stone-200 bg-stone-50 text-stone-700'
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    pondType === 'managed'
+                      ? 'bg-emerald-600 text-white'
+                      : 'border border-stone-300 bg-white text-stone-700 hover:bg-stone-100'
                   }`}
                 >
                   मानव-निर्मित
@@ -333,7 +347,7 @@ export function Dashboard() {
 
             <button
               onClick={handleStartMeasurement}
-              className="mt-6 inline-flex w-full items-center justify-center rounded-md bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
             >
               <Play className="mr-2 h-4 w-4" />
               मापन शुरू करें
@@ -341,23 +355,21 @@ export function Dashboard() {
           </div>
         ) : measurementInProgress ? (
           <>
-            <div className="mb-8 rounded-lg border border-amber-500/30 bg-amber-500/10 p-8">
+            <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex items-start gap-4">
-                  <Radio className="mt-1 h-10 w-10 animate-pulse text-amber-400" />
+                  <Radio className="mt-1 h-8 w-8 animate-pulse text-amber-500" />
                   <div>
-                    <h2 className="text-2xl font-semibold text-white">मापन जारी है</h2>
-                    <p className="mt-2 text-slate-200">
+                    <h2 className="text-xl font-semibold text-stone-900">मापन जारी है</h2>
+                    <p className="mt-1 text-sm text-stone-600">
                       डिवाइस को सही जगह रखें। नीचे आते हुए लाइव मान दिख रहे हैं।
                     </p>
-                    <p className="mt-2 text-sm text-slate-300">
-                      अब तक की रीडिंग: {activeMeasurementReadings.length}
-                    </p>
+                    <p className="mt-1 text-sm text-stone-500">अब तक की रीडिंग: {activeMeasurementReadings.length}</p>
                   </div>
                 </div>
-                <div className="rounded-lg border border-amber-400/30 bg-slate-950/50 px-5 py-4 text-center">
-                  <p className="text-sm text-slate-400">बाकी समय</p>
-                  <p className="mt-1 text-3xl font-bold text-amber-300">
+                <div className="rounded-lg border border-amber-200 bg-white px-5 py-4 text-center">
+                  <p className="text-xs uppercase tracking-wide text-stone-400">बाकी समय</p>
+                  <p className="mt-1 text-3xl font-bold text-amber-600">
                     {formatCountdown((measurementEndsAt ?? nowMs) - nowMs)}
                   </p>
                 </div>
@@ -365,41 +377,32 @@ export function Dashboard() {
             </div>
 
             <section className="mb-8">
-              <div className="mb-4 flex items-center gap-2">
-                <Waves className="h-5 w-5 text-cyan-400" />
-                <h2 className="text-xl font-semibold text-white">मापन के दौरान पानी का लाइव डेटा</h2>
-              </div>
+              <SectionHeading icon={<Waves className="h-5 w-5 text-sky-600" />} title="मापन के दौरान पानी का लाइव डेटा" />
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
-                <StatCard title="पानी pH" value={activeMeasurementLatestReading?.water_ph ?? null} unit="" icon={<Droplets className="h-6 w-6" />} color="cyan" />
-                <StatCard title="ORP" value={activeMeasurementLatestReading?.orp ?? null} unit="mV" icon={<Activity className="h-6 w-6" />} color="green" />
-                <StatCard title="TDS" value={activeMeasurementLatestReading?.tds ?? null} unit="ppm" icon={<FlaskConical className="h-6 w-6" />} color="amber" />
-                <StatCard title="गंदलापन" value={activeMeasurementLatestReading?.turb ?? null} unit="NTU" icon={<TestTube className="h-6 w-6" />} color="violet" />
-                <StatCard title="पानी तापमान" value={activeMeasurementLatestReading?.water_temp_c ?? null} unit="°C" icon={<Thermometer className="h-6 w-6" />} color="rose" />
+                <StatCard title="पानी pH" value={activeMeasurementLatestReading?.water_ph ?? null} icon={<Droplets className="h-5 w-5" />} accent="water" />
+                <StatCard title="ORP" value={activeMeasurementLatestReading?.orp ?? null} unit="mV" icon={<Activity className="h-5 w-5" />} accent="water" />
+                <StatCard title="TDS" value={activeMeasurementLatestReading?.tds ?? null} unit="ppm" icon={<FlaskConical className="h-5 w-5" />} accent="water" />
+                <StatCard title="गंदलापन" value={activeMeasurementLatestReading?.turb ?? null} unit="NTU" icon={<TestTube className="h-5 w-5" />} accent="water" />
+                <StatCard title="पानी तापमान" value={activeMeasurementLatestReading?.water_temp_c ?? null} unit="°C" icon={<Thermometer className="h-5 w-5" />} accent="water" />
               </div>
             </section>
 
             <section className="mb-8">
-              <div className="mb-4 flex items-center gap-2">
-                <Sprout className="h-5 w-5 text-emerald-400" />
-                <h2 className="text-xl font-semibold text-white">मापन के दौरान मिट्टी का लाइव डेटा</h2>
-              </div>
+              <SectionHeading icon={<Sprout className="h-5 w-5 text-emerald-600" />} title="मापन के दौरान मिट्टी का लाइव डेटा" />
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <StatCard title="मिट्टी pH" value={activeMeasurementLatestReading?.soil_ph ?? null} unit="" icon={<Droplets className="h-6 w-6" />} color="teal" />
-                <StatCard title="मिट्टी EC" value={activeMeasurementLatestReading?.soil_ec ?? null} unit="" icon={<Activity className="h-6 w-6" />} color="orange" />
-                <StatCard title="मिट्टी नमी" value={activeMeasurementLatestReading?.soil_moisture ?? null} unit="" icon={<Leaf className="h-6 w-6" />} color="emerald" />
-                <StatCard title="मिट्टी तापमान" value={activeMeasurementLatestReading?.soil_temp_c ?? null} unit="°C" icon={<Thermometer className="h-6 w-6" />} color="rose" />
+                <StatCard title="मिट्टी pH" value={activeMeasurementLatestReading?.soil_ph ?? null} icon={<Droplets className="h-5 w-5" />} accent="soil" />
+                <StatCard title="मिट्टी EC" value={activeMeasurementLatestReading?.soil_ec ?? null} icon={<Activity className="h-5 w-5" />} accent="soil" />
+                <StatCard title="मिट्टी नमी" value={activeMeasurementLatestReading?.soil_moisture ?? null} icon={<Leaf className="h-5 w-5" />} accent="soil" />
+                <StatCard title="मिट्टी तापमान" value={activeMeasurementLatestReading?.soil_temp_c ?? null} unit="°C" icon={<Thermometer className="h-5 w-5" />} accent="soil" />
               </div>
             </section>
 
             <section className="mb-8">
-              <div className="mb-4 flex items-center gap-2">
-                <Leaf className="h-5 w-5 text-lime-400" />
-                <h2 className="text-xl font-semibold text-white">मापन के दौरान NPK लाइव डेटा</h2>
-              </div>
+              <SectionHeading icon={<Leaf className="h-5 w-5 text-amber-600" />} title="मापन के दौरान NPK लाइव डेटा" />
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <StatCard title="नाइट्रोजन" value={activeMeasurementLatestReading?.nitrogen ?? null} unit="" icon={<Leaf className="h-6 w-6" />} color="lime" />
-                <StatCard title="फॉस्फोरस" value={activeMeasurementLatestReading?.phosphorus ?? null} unit="" icon={<Leaf className="h-6 w-6" />} color="amber" />
-                <StatCard title="पोटैशियम" value={activeMeasurementLatestReading?.potassium ?? null} unit="" icon={<Leaf className="h-6 w-6" />} color="fuchsia" />
+                <StatCard title="नाइट्रोजन" value={activeMeasurementLatestReading?.nitrogen ?? null} icon={<Leaf className="h-5 w-5" />} accent="nutrient" />
+                <StatCard title="फॉस्फोरस" value={activeMeasurementLatestReading?.phosphorus ?? null} icon={<Leaf className="h-5 w-5" />} accent="nutrient" />
+                <StatCard title="पोटैशियम" value={activeMeasurementLatestReading?.potassium ?? null} icon={<Leaf className="h-5 w-5" />} accent="nutrient" />
               </div>
             </section>
 
@@ -410,15 +413,17 @@ export function Dashboard() {
             <HistoryTable readings={activeMeasurementReadings} latestTs={activeMeasurementLatestReading?.ts} />
           </>
         ) : resultReadings.length === 0 ? (
-          <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-12 text-center">
-            <Droplets className="h-16 w-16 text-slate-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold text-white mb-2">उस 1 मिनट में कोई रीडिंग नहीं मिली</h2>
-            <p className="text-slate-300 mb-4">
+          <div className="rounded-xl border border-stone-200 bg-white p-12 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100">
+              <Droplets className="h-7 w-7 text-stone-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-stone-900">उस 1 मिनट में कोई रीडिंग नहीं मिली</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm text-stone-500">
               टाइमर पूरा हो गया, लेकिन मापन अवधि में कोई डेटा नहीं मिला। डिवाइस लाइव है या नहीं देखकर फिर से शुरू करें।
             </p>
             <button
               onClick={handleStartMeasurement}
-              className="inline-flex items-center rounded-md bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-400"
+              className="mt-5 inline-flex items-center rounded-lg bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
             >
               <TimerReset className="mr-2 h-4 w-4" />
               फिर से मापन करें
@@ -452,58 +457,49 @@ export function Dashboard() {
             />
 
             <section className="mb-8">
-              <div className="mb-4 flex items-center gap-2">
-                <Waves className="h-5 w-5 text-cyan-400" />
-                <h2 className="text-xl font-semibold text-white">मापा गया पानी डेटा</h2>
-              </div>
+              <SectionHeading icon={<Waves className="h-5 w-5 text-sky-600" />} title="मापा गया पानी डेटा" />
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
-                <StatCard title="पानी pH" value={resultLatestReading?.water_ph ?? null} unit="" icon={<Droplets className="h-6 w-6" />} color="cyan" />
-                <StatCard title="ORP" value={resultLatestReading?.orp ?? null} unit="mV" icon={<Activity className="h-6 w-6" />} color="green" />
-                <StatCard title="TDS" value={resultLatestReading?.tds ?? null} unit="ppm" icon={<FlaskConical className="h-6 w-6" />} color="amber" />
-                <StatCard title="गंदलापन" value={resultLatestReading?.turb ?? null} unit="NTU" icon={<TestTube className="h-6 w-6" />} color="violet" />
-                <StatCard title="पानी तापमान" value={resultLatestReading?.water_temp_c ?? null} unit="°C" icon={<Thermometer className="h-6 w-6" />} color="rose" />
+                <StatCard title="पानी pH" value={resultLatestReading?.water_ph ?? null} icon={<Droplets className="h-5 w-5" />} accent="water" />
+                <StatCard title="ORP" value={resultLatestReading?.orp ?? null} unit="mV" icon={<Activity className="h-5 w-5" />} accent="water" />
+                <StatCard title="TDS" value={resultLatestReading?.tds ?? null} unit="ppm" icon={<FlaskConical className="h-5 w-5" />} accent="water" />
+                <StatCard title="गंदलापन" value={resultLatestReading?.turb ?? null} unit="NTU" icon={<TestTube className="h-5 w-5" />} accent="water" />
+                <StatCard title="पानी तापमान" value={resultLatestReading?.water_temp_c ?? null} unit="°C" icon={<Thermometer className="h-5 w-5" />} accent="water" />
               </div>
             </section>
 
             <section className="mb-8">
-              <div className="mb-4 flex items-center gap-2">
-                <Sprout className="h-5 w-5 text-emerald-400" />
-                <h2 className="text-xl font-semibold text-white">मापा गया मिट्टी डेटा</h2>
-              </div>
+              <SectionHeading icon={<Sprout className="h-5 w-5 text-emerald-600" />} title="मापा गया मिट्टी डेटा" />
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <StatCard title="मिट्टी pH" value={resultLatestReading?.soil_ph ?? null} unit="" icon={<Droplets className="h-6 w-6" />} color="teal" />
-                <StatCard title="मिट्टी EC" value={resultLatestReading?.soil_ec ?? null} unit="" icon={<Activity className="h-6 w-6" />} color="orange" />
-                <StatCard title="मिट्टी नमी" value={resultLatestReading?.soil_moisture ?? null} unit="" icon={<Leaf className="h-6 w-6" />} color="emerald" />
-                <StatCard title="मिट्टी तापमान" value={resultLatestReading?.soil_temp_c ?? null} unit="°C" icon={<Thermometer className="h-6 w-6" />} color="rose" />
+                <StatCard title="मिट्टी pH" value={resultLatestReading?.soil_ph ?? null} icon={<Droplets className="h-5 w-5" />} accent="soil" />
+                <StatCard title="मिट्टी EC" value={resultLatestReading?.soil_ec ?? null} icon={<Activity className="h-5 w-5" />} accent="soil" />
+                <StatCard title="मिट्टी नमी" value={resultLatestReading?.soil_moisture ?? null} icon={<Leaf className="h-5 w-5" />} accent="soil" />
+                <StatCard title="मिट्टी तापमान" value={resultLatestReading?.soil_temp_c ?? null} unit="°C" icon={<Thermometer className="h-5 w-5" />} accent="soil" />
               </div>
             </section>
 
             <section className="mb-8">
-              <div className="mb-4 flex items-center gap-2">
-                <Leaf className="h-5 w-5 text-lime-400" />
-                <h2 className="text-xl font-semibold text-white">मापा गया NPK</h2>
-              </div>
+              <SectionHeading icon={<Leaf className="h-5 w-5 text-amber-600" />} title="मापा गया NPK" />
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <StatCard title="नाइट्रोजन" value={resultLatestReading?.nitrogen ?? null} unit="" icon={<Leaf className="h-6 w-6" />} color="lime" />
-                <StatCard title="फॉस्फोरस" value={resultLatestReading?.phosphorus ?? null} unit="" icon={<Leaf className="h-6 w-6" />} color="amber" />
-                <StatCard title="पोटैशियम" value={resultLatestReading?.potassium ?? null} unit="" icon={<Leaf className="h-6 w-6" />} color="fuchsia" />
+                <StatCard title="नाइट्रोजन" value={resultLatestReading?.nitrogen ?? null} icon={<Leaf className="h-5 w-5" />} accent="nutrient" />
+                <StatCard title="फॉस्फोरस" value={resultLatestReading?.phosphorus ?? null} icon={<Leaf className="h-5 w-5" />} accent="nutrient" />
+                <StatCard title="पोटैशियम" value={resultLatestReading?.potassium ?? null} icon={<Leaf className="h-5 w-5" />} accent="nutrient" />
               </div>
             </section>
 
             {resultLatestReading?.turb_status && (
-              <div className="mb-8 rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+              <div className="mb-8 rounded-xl border border-stone-200 bg-white p-6">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-white">पानी की स्थिति</h3>
-                    <p className="text-sm text-slate-400">1 मिनट की माप के अंतिम डेटा पर आधारित स्थिति।</p>
+                    <h3 className="text-base font-semibold text-stone-900">पानी की स्थिति</h3>
+                    <p className="mt-1 text-sm text-stone-500">1 मिनट की माप के अंतिम डेटा पर आधारित स्थिति।</p>
                   </div>
                   <div
-                    className={`inline-flex items-center rounded-md px-4 py-2 text-sm font-semibold ${
+                    className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold ${
                       resultLatestReading.turb_status.toLowerCase() === 'clear'
-                        ? 'bg-emerald-500/15 text-emerald-300'
+                        ? 'bg-emerald-50 text-emerald-700'
                         : resultLatestReading.turb_status.toLowerCase() === 'cloudy'
-                          ? 'bg-amber-500/15 text-amber-300'
-                          : 'bg-rose-500/15 text-rose-300'
+                          ? 'bg-amber-50 text-amber-700'
+                          : 'bg-rose-50 text-rose-700'
                     }`}
                   >
                     {resultLatestReading.turb_status.toUpperCase()}
@@ -519,43 +515,41 @@ export function Dashboard() {
             <HistoryTable readings={resultReadings} latestTs={resultLatestReading?.ts} />
 
             <div className="mt-8 grid gap-4 lg:grid-cols-2">
-              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
-                <h3 className="text-lg font-semibold text-white">माप का सार</h3>
+              <div className="rounded-xl border border-stone-200 bg-white p-6">
+                <h3 className="text-base font-semibold text-stone-900">माप का सार</h3>
                 <dl className="mt-4 space-y-3 text-sm">
-                  <div className="flex justify-between gap-4 border-b border-slate-800 pb-3">
-                    <dt className="text-slate-400">पानी pH</dt>
-                    <dd className="text-slate-100">{formatMetric(resultLatestReading?.water_ph ?? null)}</dd>
+                  <div className="flex justify-between gap-4 border-b border-stone-100 pb-3">
+                    <dt className="text-stone-500">पानी pH</dt>
+                    <dd className="font-medium text-stone-900">{formatMetric(resultLatestReading?.water_ph ?? null)}</dd>
                   </div>
-                  <div className="flex justify-between gap-4 border-b border-slate-800 pb-3">
-                    <dt className="text-slate-400">मिट्टी pH</dt>
-                    <dd className="text-slate-100">{formatMetric(resultLatestReading?.soil_ph ?? null)}</dd>
+                  <div className="flex justify-between gap-4 border-b border-stone-100 pb-3">
+                    <dt className="text-stone-500">मिट्टी pH</dt>
+                    <dd className="font-medium text-stone-900">{formatMetric(resultLatestReading?.soil_ph ?? null)}</dd>
                   </div>
-                  <div className="flex justify-between gap-4 border-b border-slate-800 pb-3">
-                    <dt className="text-slate-400">जैविक पदार्थ</dt>
-                    <dd className="text-amber-300">अभी नहीं मापा गया</dd>
+                  <div className="flex justify-between gap-4 border-b border-stone-100 pb-3">
+                    <dt className="text-stone-500">जैविक पदार्थ</dt>
+                    <dd className="font-medium text-amber-600">अभी नहीं मापा गया</dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt className="text-slate-400">सूक्ष्म पोषक तत्व</dt>
-                    <dd className="text-amber-300">अभी नहीं मापा गया</dd>
+                    <dt className="text-stone-500">सूक्ष्म पोषक तत्व</dt>
+                    <dd className="font-medium text-amber-600">अभी नहीं मापा गया</dd>
                   </div>
                 </dl>
               </div>
 
-              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
-                <h3 className="text-lg font-semibold text-white">किसान नोट</h3>
-                <p className="mt-4 text-sm leading-6 text-slate-300">
-                  यह परिणाम 1 मिनट की माप पर आधारित है। इससे पानी, मिट्टी, क्षेत्रफल के हिसाब से पोषक आवश्यकता और तालाब की स्थिति समझाई जा सकती है।
+              <div className="rounded-xl border border-stone-200 bg-white p-6">
+                <h3 className="text-base font-semibold text-stone-900">किसान नोट</h3>
+                <p className="mt-4 text-sm leading-7 text-stone-600">
+                  यह परिणाम 1 मिनट की माप पर आधारित है। इससे पानी, मिट्टी, क्षेत्रफल के हिसाब से पोषक आवश्यकता और तालाब की
+                  स्थिति समझाई जा सकती है।
                 </p>
               </div>
             </div>
 
             <section className="mt-8">
-              <div className="mb-4 flex items-center gap-2">
-                <TimerReset className="h-5 w-5 text-cyan-300" />
-                <h2 className="text-xl font-semibold text-white">पिछले परीक्षण</h2>
-              </div>
+              <SectionHeading icon={<TimerReset className="h-5 w-5 text-stone-400" />} title="पिछले परीक्षण" />
               {completedMeasurements.length === 0 ? (
-                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6 text-sm text-slate-400">
+                <div className="rounded-xl border border-stone-200 bg-white p-6 text-sm text-stone-500">
                   अभी तक कोई पूर्ण परीक्षण सहेजा नहीं गया है।
                 </div>
               ) : (
@@ -570,33 +564,33 @@ export function Dashboard() {
                     );
 
                     return (
-                      <div key={session.id} className="rounded-lg border border-slate-800 bg-slate-900/80 p-5">
+                      <div key={session.id} className="rounded-xl border border-stone-200 bg-white p-5">
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <p className="text-sm font-semibold text-white">
+                            <p className="text-sm font-semibold text-stone-900">
                               {new Date(session.startedAt).toLocaleString()}
                             </p>
-                            <p className="mt-1 text-sm text-slate-400">
+                            <p className="mt-1 text-sm text-stone-500">
                               डिवाइस {session.deviceId} • {session.readings.length} रीडिंग
                             </p>
                           </div>
-                          <div className="rounded-md border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold text-slate-200">
+                          <div className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-1 text-xs font-semibold text-stone-600">
                             {report.overallStatus.toUpperCase()}
                           </div>
                         </div>
 
-                        <p className="mt-4 text-sm font-semibold text-cyan-200">{report.headline}</p>
-                        <p className="mt-2 text-sm leading-6 text-slate-300">{report.summary}</p>
+                        <p className="mt-4 text-sm font-semibold text-emerald-700">{report.headline}</p>
+                        <p className="mt-2 text-sm leading-6 text-stone-600">{report.summary}</p>
 
-                        <div className="mt-4 grid gap-2 text-sm text-slate-400">
-                          <p>पानी pH: <span className="text-slate-200">{formatMetric(session.latestReading?.water_ph ?? null)}</span></p>
-                          <p>मिट्टी pH: <span className="text-slate-200">{formatMetric(session.latestReading?.soil_ph ?? null)}</span></p>
-                          <p>नाइट्रोजन: <span className="text-slate-200">{formatMetric(session.latestReading?.nitrogen ?? null)}</span></p>
+                        <div className="mt-4 grid gap-2 text-sm text-stone-500">
+                          <p>पानी pH: <span className="font-medium text-stone-900">{formatMetric(session.latestReading?.water_ph ?? null)}</span></p>
+                          <p>मिट्टी pH: <span className="font-medium text-stone-900">{formatMetric(session.latestReading?.soil_ph ?? null)}</span></p>
+                          <p>नाइट्रोजन: <span className="font-medium text-stone-900">{formatMetric(session.latestReading?.nitrogen ?? null)}</span></p>
                         </div>
 
-                        <div className="mt-4 rounded-md border border-slate-800 bg-slate-950/70 p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">सलाह</p>
-                          <p className="mt-2 text-sm text-slate-300">
+                        <div className="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">सलाह</p>
+                          <p className="mt-2 text-sm text-stone-600">
                             {report.recommendationLines[0] ?? 'इस परीक्षण के लिए कोई सलाह उपलब्ध नहीं है।'}
                           </p>
                         </div>

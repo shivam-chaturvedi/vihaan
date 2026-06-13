@@ -74,11 +74,11 @@ export function TestAnalysisPanel({
   };
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-6 mb-8 shadow-sm">
+    <div className="rounded-xl border border-stone-200 bg-white p-6 mb-8">
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-stone-900">Gemini विश्लेषण</h2>
+            <h2 className="text-xl font-semibold text-stone-900">Gemini विश्लेषण</h2>
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
               <Radio className="h-3.5 w-3.5 animate-pulse" />
               GEMINI 2.5 FLASH-LITE
@@ -93,7 +93,7 @@ export function TestAnalysisPanel({
           <button
             onClick={handleGetInsights}
             disabled={isLoadingInsights || isGeneratingPdf || readings.length === 0}
-            className="inline-flex items-center justify-center rounded-md bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-stone-800 disabled:bg-stone-300 disabled:text-stone-500"
+            className="inline-flex items-center justify-center rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-100 disabled:border-stone-200 disabled:text-stone-300"
           >
             {isLoadingInsights ? (
               <>
@@ -111,7 +111,7 @@ export function TestAnalysisPanel({
           <button
             onClick={handleGeneratePdf}
             disabled={isLoadingInsights || isGeneratingPdf || readings.length === 0}
-            className="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:bg-stone-300 disabled:text-stone-500"
+            className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:bg-stone-200 disabled:text-stone-400"
           >
             {isGeneratingPdf ? (
               <>

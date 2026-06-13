@@ -16,10 +16,10 @@ export function HistoryTable({ readings, latestTs }: HistoryTableProps) {
   const tableKey = readings.length > 0 ? Math.max(...readings.map((r) => r.ts)) : 0;
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-white overflow-hidden shadow-sm" key={tableKey}>
+    <div className="rounded-xl border border-stone-200 bg-white overflow-hidden" key={tableKey}>
       <div className="px-6 py-4 border-b border-stone-200">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-xl font-bold text-stone-900">पिछली रीडिंग</h2>
+          <h2 className="text-lg font-semibold text-stone-900">पिछली रीडिंग</h2>
           {readings.length > 0 && (
             <span className="text-xs text-stone-500">
               {readings.length} रीडिंग दिखाई जा रही हैं
@@ -65,7 +65,7 @@ export function HistoryTable({ readings, latestTs }: HistoryTableProps) {
                 <tr key={`${reading.ts}-${reading.deviceId}-${index}`} className="hover:bg-stone-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-900">
                     {formatDateTime(reading.ts, latestTs)}
-                    {index === 0 && <span className="ml-2 text-xs font-semibold text-emerald-400">(नवीनतम)</span>}
+                    {index === 0 && <span className="ml-2 text-xs font-semibold text-emerald-600">(नवीनतम)</span>}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-600">{reading.deviceId}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-900">{renderNumber(reading.water_ph)}</td>

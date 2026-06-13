@@ -1,52 +1,36 @@
 import { ReactNode } from 'react';
 
+type Accent = 'water' | 'soil' | 'nutrient' | 'neutral';
+
 interface StatCardProps {
   title: string;
   value: string | number | null;
   unit?: string;
   icon: ReactNode;
-  color?:
-    | 'cyan'
-    | 'green'
-    | 'amber'
-    | 'violet'
-    | 'rose'
-    | 'teal'
-    | 'orange'
-    | 'emerald'
-    | 'lime'
-    | 'fuchsia';
+  accent?: Accent;
 }
 
-export function StatCard({ title, value, unit, icon, color = 'cyan' }: StatCardProps) {
-  const colorClasses = {
-    cyan: 'bg-cyan-50 border-cyan-100 text-cyan-700',
-    green: 'bg-emerald-50 border-emerald-100 text-emerald-700',
-    amber: 'bg-amber-50 border-amber-100 text-amber-700',
-    violet: 'bg-violet-50 border-violet-100 text-violet-700',
-    rose: 'bg-rose-50 border-rose-100 text-rose-700',
-    teal: 'bg-teal-50 border-teal-100 text-teal-700',
-    orange: 'bg-orange-50 border-orange-100 text-orange-700',
-    emerald: 'bg-emerald-50 border-emerald-100 text-emerald-700',
-    lime: 'bg-lime-50 border-lime-100 text-lime-700',
-    fuchsia: 'bg-fuchsia-50 border-fuchsia-100 text-fuchsia-700',
-  };
+const accentClasses: Record<Accent, string> = {
+  water: 'bg-sky-50 text-sky-600',
+  soil: 'bg-emerald-50 text-emerald-600',
+  nutrient: 'bg-amber-50 text-amber-600',
+  neutral: 'bg-stone-100 text-stone-500',
+};
 
+export function StatCard({ title, value, unit, icon, accent = 'neutral' }: StatCardProps) {
   const displayValue =
-    value !== null && value !== undefined ? (typeof value === 'number' ? value.toFixed(2) : value) : 'N/A';
+    value !== null && value !== undefined ? (typeof value === 'number' ? value.toFixed(2) : value) : '—';
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-stone-500">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-stone-900 break-words">
-            {displayValue}
-            {unit && <span className="ml-1 text-lg font-normal text-stone-400">{unit}</span>}
-          </p>
-        </div>
-        <div className={`rounded-md border p-3 ${colorClasses[color]}`}>{icon}</div>
+    <div className="rounded-xl border border-stone-200 bg-white p-5">
+      <div className="flex items-center gap-3">
+        <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${accentClasses[accent]}`}>{icon}</div>
+        <p className="text-sm font-medium text-stone-500">{title}</p>
       </div>
+      <p className="mt-4 text-3xl font-semibold tracking-tight text-stone-900 break-words">
+        {displayValue}
+        {unit && <span className="ml-1 text-base font-normal text-stone-400">{unit}</span>}
+      </p>
     </div>
   );
 }

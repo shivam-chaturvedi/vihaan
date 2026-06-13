@@ -15,9 +15,9 @@ interface AssessmentReportPanelProps {
 }
 
 function statusClasses(status: 'good' | 'watch' | 'action') {
-  if (status === 'good') return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100';
-  if (status === 'watch') return 'border-amber-500/30 bg-amber-500/10 text-amber-100';
-  return 'border-rose-500/30 bg-rose-500/10 text-rose-100';
+  if (status === 'good') return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+  if (status === 'watch') return 'border-amber-200 bg-amber-50 text-amber-700';
+  return 'border-rose-200 bg-rose-50 text-rose-700';
 }
 
 export function AssessmentReportPanel({
@@ -32,10 +32,10 @@ export function AssessmentReportPanel({
   const report = buildAssessmentReport(latestReading, pondType, safeArea, areaUnit);
 
   return (
-    <section className="mb-8 rounded-lg border border-stone-200 bg-white p-6 shadow-sm">
+    <section className="mb-8 rounded-xl border border-stone-200 bg-white p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <ClipboardList className="h-5 w-5 text-cyan-300" />
+          <ClipboardList className="h-5 w-5 text-sky-600" />
           <div>
             <h2 className="text-xl font-semibold text-stone-900">आकलन रिपोर्ट</h2>
             <p className="text-sm text-stone-500">
@@ -61,7 +61,7 @@ export function AssessmentReportPanel({
 
         <div className="rounded-md border border-stone-200 bg-stone-50 p-4">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="h-4 w-4 text-amber-300" />
+            <ShieldAlert className="h-4 w-4 text-amber-600" />
             <p className="text-sm font-semibold text-stone-900">सीमा</p>
           </div>
           <p className="mt-3 text-sm leading-6 text-stone-600">

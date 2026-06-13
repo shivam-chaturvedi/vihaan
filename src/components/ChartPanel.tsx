@@ -57,17 +57,17 @@ export function ChartPanel({ readings, latestTs }: ChartPanelProps) {
 
   if (chartData.length === 0) {
     return (
-      <div className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-xl font-bold text-stone-900">लाइव ग्राफ</h2>
+      <div className="rounded-xl border border-stone-200 bg-white p-6">
+        <h2 className="mb-4 text-lg font-semibold text-stone-900">लाइव ग्राफ</h2>
         <div className="h-64 flex items-center justify-center text-stone-400">ग्राफ के लिए डेटा उपलब्ध नहीं है</div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-stone-200 bg-white p-6">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-stone-900">समय-आधारित लाइव ग्राफ</h2>
+        <h2 className="text-lg font-semibold text-stone-900">समय-आधारित लाइव ग्राफ</h2>
         <p className="mt-2 text-sm text-stone-500">
           हर सेंसर का अलग ग्राफ दिखेगा और नया डेटा आते ही अपडेट होगा।
         </p>
@@ -78,7 +78,7 @@ export function ChartPanel({ readings, latestTs }: ChartPanelProps) {
           const hasData = chartData.some((row) => row[series.key as SeriesKey] !== null && row[series.key as SeriesKey] !== undefined);
 
           return (
-            <div key={series.key} className="rounded-lg border border-stone-200 bg-stone-50 p-4">
+            <div key={series.key} className="rounded-xl border border-stone-200 bg-stone-50 p-4">
               <div className="mb-3 flex items-start justify-between gap-4">
                 <div>
                   <h3 className="text-sm font-semibold text-stone-900">{series.label}</h3>
