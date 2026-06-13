@@ -2,33 +2,22 @@ import { useEffect, useState } from 'react';
 import { get, ref } from 'firebase/database';
 import { db } from '../firebase';
 import { RawSensorReading, SensorDataMap, SensorReading } from '../types';
-import { getDisplayTimestampMs } from '../utils/formatTime';
+import { pushIdToMs } from '../utils/firebaseKey';
 
 const LIVE_WINDOW_MS = 3 * 60 * 1000;
 const POLL_INTERVAL_MS = 2000;
 const MAX_READINGS = 120;
 
-function getLatestTimestamp(readings: SensorReading[]): number | null {
-  if (readings.length === 0) {
-    return null;
-  }
-
-  return readings.reduce((latest, current) => (current.ts > latest.ts ? current : latest)).ts;
-}
-
 function filterLiveReadings(readings: SensorReading[]): SensorReading[] {
-  const referenceTs = getLatestTimestamp(readings);
-
-  if (referenceTs === null) {
+  if (readings.length === 0) {
     return [];
   }
 
   const now = Date.now();
 
-  return readings.filter((reading) => {
-    const displayMs = getDisplayTimestampMs(reading.ts, referenceTs);
-    return Math.abs(now - displayMs) <= LIVE_WINDOW_MS;
-  });
+  // `ts` is now real wall-clock time (decoded from the push ID), so "live"
+  // simply means the reading was written within the last few minutes.
+  return readings.filter((reading) => now - reading.ts <= LIVE_WINDOW_MS && now - reading.ts >= -LIVE_WINDOW_MS);
 }
 
 function toNullableNumber(value: unknown): number | null {
@@ -44,10 +33,15 @@ function normalizeReading(pushId: string, reading: RawSensorReading): SensorRead
   const waterPhV = toNullableNumber(reading.water_ph_v ?? reading.ph_v);
   const waterTemp = toNullableNumber(reading.water_temp_c ?? reading.temp_c);
 
+  // The device's own `ts` is millis-since-boot and resets on reboot, so it is
+  // useless for ordering. The push ID encodes the real write time — use that.
+  const pushMs = pushIdToMs(pushId);
+
   return {
     pushId,
     deviceId: reading.deviceId,
-    ts: reading.ts,
+    ts: pushMs ?? reading.ts,
+    deviceTs: reading.ts,
     raw: typeof reading.raw === 'string' ? reading.raw : '',
     npk_valid: reading.npk_valid ?? null,
     nitrogen: toNullableNumber(reading.nitrogen),
@@ -103,7 +97,13 @@ export function useSensorData() {
           .map(([pushId, reading]) => normalizeReading(pushId, reading))
           .filter((reading): reading is SensorReading => reading !== null);
 
-        readingsArray.sort((a, b) => a.ts - b.ts);
+        // Order by push ID (chronological write order), falling back to ts.
+        readingsArray.sort((a, b) => {
+          if (a.pushId && b.pushId && a.pushId !== b.pushId) {
+            return a.pushId < b.pushId ? -1 : 1;
+          }
+          return a.ts - b.ts;
+        });
         const recentReadings = readingsArray.slice(-MAX_READINGS);
 
         const currentLiveReadings = filterLiveReadings(recentReadings);

@@ -1,6 +1,9 @@
 export interface SensorReading {
   deviceId: string;
+  /** Canonical wall-clock time of the reading in ms (decoded from the Firebase push ID). */
   ts: number;
+  /** Raw value the device reported in its `ts` field (millis-since-boot; resets on reboot). */
+  deviceTs: number;
   raw: string;
   pushId?: string;
   npk_valid?: boolean | null;
