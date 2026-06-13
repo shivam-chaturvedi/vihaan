@@ -1,171 +1,140 @@
-import { useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { SensorReading } from '../types';
-import { formatDateTime } from '../utils/formatTime';
+import { getDisplayTimestampMs } from '../utils/formatTime';
 
 interface ChartPanelProps {
   readings: SensorReading[];
-  /** Latest reading ts — used to map device time to system time */
   latestTs?: number | null;
 }
 
+const seriesConfig = [
+  { key: 'water_ph', label: 'पानी pH', color: '#22d3ee', unit: '' },
+  { key: 'water_ph_v', label: 'पानी pH वोल्टेज', color: '#06b6d4', unit: 'V' },
+  { key: 'orp', label: 'ORP', color: '#34d399', unit: 'mV' },
+  { key: 'orp_raw', label: 'ORP रॉ', color: '#10b981', unit: '' },
+  { key: 'tds', label: 'TDS', color: '#fbbf24', unit: 'ppm' },
+  { key: 'turb', label: 'गंदलापन', color: '#c084fc', unit: 'NTU' },
+  { key: 'turb_adc', label: 'गंदलापन ADC', color: '#a855f7', unit: '' },
+  { key: 'water_temp_c', label: 'पानी तापमान', color: '#fb7185', unit: 'C' },
+  { key: 'soil_ph', label: 'मिट्टी pH', color: '#2dd4bf', unit: '' },
+  { key: 'soil_ec', label: 'मिट्टी EC', color: '#f97316', unit: '' },
+  { key: 'soil_moisture', label: 'मिट्टी नमी', color: '#84cc16', unit: '' },
+  { key: 'soil_temp_c', label: 'मिट्टी तापमान', color: '#ef4444', unit: 'C' },
+  { key: 'nitrogen', label: 'नाइट्रोजन', color: '#65a30d', unit: '' },
+  { key: 'phosphorus', label: 'फॉस्फोरस', color: '#f59e0b', unit: '' },
+  { key: 'potassium', label: 'पोटैशियम', color: '#d946ef', unit: '' },
+] as const;
+
+type SeriesKey = (typeof seriesConfig)[number]['key'];
+
+function formatValue(value: number | null | undefined, unit: string) {
+  if (value === null || value === undefined) return 'उपलब्ध नहीं';
+  return unit ? `${value.toFixed(2)} ${unit}` : value.toFixed(2);
+}
+
 export function ChartPanel({ readings, latestTs }: ChartPanelProps) {
-  const [visibleLines, setVisibleLines] = useState({
-    ph: true,
-    orp: true,
-    tds: true,
-    turb: true,
-    temp: true,
+  const chartData = readings.map((reading) => {
+    const displayMs = getDisplayTimestampMs(reading.ts, latestTs);
+
+    return {
+      ...reading,
+      displayMs,
+      displayTime: new Date(displayMs).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }),
+    };
   });
 
-  const toggleLine = (key: keyof typeof visibleLines) => {
-    setVisibleLines(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const chartData = readings.map(reading => ({
-    time: formatDateTime(reading.ts, latestTs),
-    ts: reading.ts,
-    pH: reading.ph,
-    ORP: reading.orp,
-    TDS: reading.tds,
-    Turbidity: reading.turb,
-    Temperature: reading.temp_c,
-  }));
-
-  // Use readings length and latest ts as key to force chart update when new data arrives
-  const chartKey = readings.length > 0 ? readings[readings.length - 1].ts : 0;
+  if (chartData.length === 0) {
+    return (
+      <div className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-xl font-bold text-stone-900">लाइव ग्राफ</h2>
+        <div className="h-64 flex items-center justify-center text-stone-400">ग्राफ के लिए डेटा उपलब्ध नहीं है</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+    <div className="rounded-lg border border-stone-200 bg-white p-6 shadow-sm">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Sensor Data Trends</h2>
-        
-        {/* Toggle Buttons */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => toggleLine('ph')}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors border ${
-              visibleLines.ph
-                ? 'bg-blue-100 text-blue-800 border-blue-300'
-                : 'bg-gray-100 text-gray-500 border-gray-300'
-            }`}
-          >
-            pH
-          </button>
-          <button
-            onClick={() => toggleLine('orp')}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors border ${
-              visibleLines.orp
-                ? 'bg-green-100 text-green-800 border-green-300'
-                : 'bg-gray-100 text-gray-500 border-gray-300'
-            }`}
-          >
-            ORP
-          </button>
-          <button
-            onClick={() => toggleLine('tds')}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors border ${
-              visibleLines.tds
-                ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
-                : 'bg-gray-100 text-gray-500 border-gray-300'
-            }`}
-          >
-            TDS
-          </button>
-          <button
-            onClick={() => toggleLine('turb')}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors border ${
-              visibleLines.turb
-                ? 'bg-purple-100 text-purple-800 border-purple-300'
-                : 'bg-gray-100 text-gray-500 border-gray-300'
-            }`}
-          >
-            Turbidity
-          </button>
-          <button
-            onClick={() => toggleLine('temp')}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors border ${
-              visibleLines.temp
-                ? 'bg-red-100 text-red-800 border-red-300'
-                : 'bg-gray-100 text-gray-500 border-gray-300'
-            }`}
-          >
-            Temperature
-          </button>
-        </div>
+        <h2 className="text-xl font-bold text-stone-900">समय-आधारित लाइव ग्राफ</h2>
+        <p className="mt-2 text-sm text-stone-500">
+          हर सेंसर का अलग ग्राफ दिखेगा और नया डेटा आते ही अपडेट होगा।
+        </p>
       </div>
 
-      {chartData.length === 0 ? (
-        <div className="h-64 flex items-center justify-center text-gray-500">
-          No data available for chart
-        </div>
-      ) : (
-        <ResponsiveContainer width="100%" height={400} key={chartKey}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="time" 
-              angle={-45}
-              textAnchor="end"
-              height={80}
-              tick={{ fontSize: 10 }}
-            />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            {visibleLines.ph && (
-              <Line 
-                type="monotone" 
-                dataKey="pH" 
-                stroke="#3b82f6" 
-                strokeWidth={2}
-                dot={false}
-                name="pH"
-              />
-            )}
-            {visibleLines.orp && (
-              <Line 
-                type="monotone" 
-                dataKey="ORP" 
-                stroke="#10b981" 
-                strokeWidth={2}
-                dot={false}
-                name="ORP (mV)"
-              />
-            )}
-            {visibleLines.tds && (
-              <Line 
-                type="monotone" 
-                dataKey="TDS" 
-                stroke="#eab308" 
-                strokeWidth={2}
-                dot={false}
-                name="TDS (ppm)"
-              />
-            )}
-            {visibleLines.turb && (
-              <Line 
-                type="monotone" 
-                dataKey="Turbidity" 
-                stroke="#a855f7" 
-                strokeWidth={2}
-                dot={false}
-                name="Turbidity (NTU)"
-              />
-            )}
-            {visibleLines.temp && (
-              <Line 
-                type="monotone" 
-                dataKey="Temperature" 
-                stroke="#ef4444" 
-                strokeWidth={2}
-                dot={false}
-                name="Temperature (°C)"
-              />
-            )}
-          </LineChart>
-        </ResponsiveContainer>
-      )}
+      <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+        {seriesConfig.map((series) => {
+          const hasData = chartData.some((row) => row[series.key as SeriesKey] !== null && row[series.key as SeriesKey] !== undefined);
+
+          return (
+            <div key={series.key} className="rounded-lg border border-stone-200 bg-stone-50 p-4">
+              <div className="mb-3 flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-stone-900">{series.label}</h3>
+                  <p className="mt-1 text-xs text-stone-500">{series.unit || 'सेंसर मान'}</p>
+                </div>
+                <p className="text-sm font-semibold" style={{ color: series.color }}>
+                  {formatValue(chartData[chartData.length - 1][series.key as SeriesKey], series.unit)}
+                </p>
+              </div>
+
+              {hasData ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid stroke="#e7e5e4" strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="displayTime"
+                      minTickGap={28}
+                      tick={{ fontSize: 10, fill: '#78716c' }}
+                    />
+                    <YAxis tick={{ fontSize: 10, fill: '#78716c' }} width={44} domain={['auto', 'auto']} />
+                    <Tooltip
+                      labelFormatter={(_, payload) => {
+                        if (!payload || payload.length === 0) return '';
+                        const point = payload[0].payload as { displayMs: number };
+                        return new Date(point.displayMs).toLocaleString();
+                      }}
+                      formatter={(value) => {
+                        const scalarValue = Array.isArray(value) ? value[0] : value;
+                        if (typeof scalarValue !== 'number') return ['उपलब्ध नहीं', series.label];
+                        return [formatValue(scalarValue, series.unit), series.label];
+                      }}
+                      contentStyle={{
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #e7e5e4',
+                        borderRadius: '8px',
+                        color: '#1c1917',
+                      }}
+                    />
+                    <Line
+                      type="linear"
+                      dataKey={series.key}
+                      stroke={series.color}
+                      strokeWidth={2}
+                      dot={false}
+                      connectNulls={false}
+                      isAnimationActive={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-[220px] items-center justify-center text-sm text-stone-400">इस सेंसर का डेटा अभी नहीं आया</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

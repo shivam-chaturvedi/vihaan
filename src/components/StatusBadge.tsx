@@ -6,26 +6,16 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   if (!status) return null;
 
   const statusLower = status.toLowerCase();
-  
-  let bgColor = 'bg-gray-100';
-  let textColor = 'text-gray-800';
+
+  let classes = 'bg-stone-100 text-stone-700';
 
   if (statusLower === 'clear') {
-    bgColor = 'bg-green-100';
-    textColor = 'text-green-800';
+    classes = 'bg-emerald-100 text-emerald-700';
   } else if (statusLower === 'cloudy') {
-    bgColor = 'bg-yellow-100';
-    textColor = 'text-yellow-800';
+    classes = 'bg-amber-100 text-amber-700';
   } else if (statusLower === 'dirty') {
-    bgColor = 'bg-red-100';
-    textColor = 'text-red-800';
+    classes = 'bg-rose-100 text-rose-700';
   }
 
-  return (
-    <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bgColor} ${textColor}`}
-    >
-      {status.toUpperCase()}
-    </span>
-  );
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${classes}`}>{status.toUpperCase()}</span>;
 }

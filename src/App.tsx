@@ -1,13 +1,13 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
-import { Landing } from './pages/Landing';
-import { Dashboard } from './pages/Dashboard';
 import { About } from './pages/About';
+import { Dashboard } from './pages/Dashboard';
+import { Landing } from './pages/Landing';
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-stone-50">
         <Navbar />
         <main className="flex-grow">
           <Routes>
@@ -16,15 +16,11 @@ function App() {
             <Route path="/about" element={<About />} />
           </Routes>
         </main>
-        <footer className="bg-gray-800 text-white py-8 mt-auto">
+        <footer className="mt-auto border-t border-stone-200 bg-white py-8 text-stone-500">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <p className="text-gray-400">
-                © 2026 Water Quality Monitoring System for Makhana Farming
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                IoT Device for Detecting Water Quality for Better Yield
-              </p>
+              <p>© 2026 Project Pragya</p>
+              <p className="mt-2 text-sm">किसानों के लिए सरल मापन, सलाह और खेत-स्तर मार्गदर्शन।</p>
             </div>
           </div>
         </footer>

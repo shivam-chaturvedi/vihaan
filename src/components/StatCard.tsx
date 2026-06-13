@@ -5,37 +5,47 @@ interface StatCardProps {
   value: string | number | null;
   unit?: string;
   icon: ReactNode;
-  color?: 'blue' | 'green' | 'yellow' | 'purple' | 'red';
+  color?:
+    | 'cyan'
+    | 'green'
+    | 'amber'
+    | 'violet'
+    | 'rose'
+    | 'teal'
+    | 'orange'
+    | 'emerald'
+    | 'lime'
+    | 'fuchsia';
 }
 
-export function StatCard({ title, value, unit, icon, color = 'blue' }: StatCardProps) {
+export function StatCard({ title, value, unit, icon, color = 'cyan' }: StatCardProps) {
   const colorClasses = {
-    blue: 'bg-blue-50 border-blue-200 text-blue-600',
-    green: 'bg-green-50 border-green-200 text-green-600',
-    yellow: 'bg-yellow-50 border-yellow-200 text-yellow-600',
-    purple: 'bg-purple-50 border-purple-200 text-purple-600',
-    red: 'bg-red-50 border-red-200 text-red-600',
+    cyan: 'bg-cyan-50 border-cyan-100 text-cyan-700',
+    green: 'bg-emerald-50 border-emerald-100 text-emerald-700',
+    amber: 'bg-amber-50 border-amber-100 text-amber-700',
+    violet: 'bg-violet-50 border-violet-100 text-violet-700',
+    rose: 'bg-rose-50 border-rose-100 text-rose-700',
+    teal: 'bg-teal-50 border-teal-100 text-teal-700',
+    orange: 'bg-orange-50 border-orange-100 text-orange-700',
+    emerald: 'bg-emerald-50 border-emerald-100 text-emerald-700',
+    lime: 'bg-lime-50 border-lime-100 text-lime-700',
+    fuchsia: 'bg-fuchsia-50 border-fuchsia-100 text-fuchsia-700',
   };
 
-  const displayValue = value !== null && value !== undefined 
-    ? typeof value === 'number' 
-      ? value.toFixed(2)
-      : value
-    : 'N/A';
+  const displayValue =
+    value !== null && value !== undefined ? (typeof value === 'number' ? value.toFixed(2) : value) : 'N/A';
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">
+    <div className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-stone-500">{title}</p>
+          <p className="mt-2 text-3xl font-bold text-stone-900 break-words">
             {displayValue}
-            {unit && <span className="text-lg font-normal text-gray-500 ml-1">{unit}</span>}
+            {unit && <span className="ml-1 text-lg font-normal text-stone-400">{unit}</span>}
           </p>
         </div>
-        <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
-          {icon}
-        </div>
+        <div className={`rounded-md border p-3 ${colorClasses[color]}`}>{icon}</div>
       </div>
     </div>
   );

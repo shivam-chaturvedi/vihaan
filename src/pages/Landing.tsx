@@ -1,154 +1,130 @@
 import { Link } from 'react-router-dom';
-import { Droplet, Activity, Wifi, Database, BarChart3, CheckCircle, ArrowRight } from 'lucide-react';
+import {
+  Activity,
+  ArrowRight,
+  CheckCircle2,
+  Database,
+  Droplets,
+  Leaf,
+  ShieldCheck,
+  Sprout,
+  Waves,
+} from 'lucide-react';
+
+const pillars = [
+  {
+    title: 'पानी की जाँच',
+    description: 'तालाब के पानी में pH, ORP, TDS, गंदलापन और तापमान देखें।',
+    icon: Waves,
+  },
+  {
+    title: 'मिट्टी और NPK',
+    description: 'मिट्टी का pH, तापमान और मुख्य पोषक तत्व एक ही स्क्रीन पर देखें।',
+    icon: Leaf,
+  },
+  {
+    title: 'भरोसेमंद सलाह',
+    description: 'कौन सी बात पक्की है और कहाँ अभी जाँच बाकी है, यह साफ दिखे।',
+    icon: ShieldCheck,
+  },
+];
 
 export function Landing() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-        <div className="text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            Water Quality Monitoring for
-            <span className="text-blue-600 block mt-2">Better Makhana Yield</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Real-time monitoring of pond water quality parameters to help farmers maintain optimal conditions 
-            and maximize their Makhana (Euryale ferox) crop yield.
-          </p>
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
-          >
-            View Live Dashboard
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
-        </div>
-      </section>
-
-      {/* Problem Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">The Challenge</h2>
-          <p className="text-lg text-gray-700 mb-4">
-            Makhana farming requires precise water quality management. Traditional methods of monitoring 
-            pond conditions are time-consuming, inaccurate, and reactive rather than proactive. Poor water 
-            quality can lead to:
-          </p>
-          <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-            <li>Reduced crop yield and quality</li>
-            <li>Increased disease susceptibility</li>
-            <li>Higher production costs</li>
-            <li>Delayed response to water quality issues</li>
-          </ul>
-        </div>
-      </section>
-
-      {/* Solution Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg p-8 text-white">
-          <h2 className="text-3xl font-bold mb-6">Our Solution</h2>
-          <p className="text-lg mb-6">
-            An IoT-based water quality monitoring system that provides real-time data on critical parameters 
-            including pH, ORP (Oxidation-Reduction Potential), TDS (Total Dissolved Solids), Turbidity, and 
-            Temperature. Farmers can access this data anytime, anywhere through a web dashboard.
-          </p>
-          <div className="grid md:grid-cols-3 gap-6 mt-8">
-            <div className="bg-white/10 rounded-lg p-6 backdrop-blur-sm">
-              <Activity className="h-10 w-10 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Real-Time Monitoring</h3>
-              <p className="text-blue-100">Continuous 24/7 monitoring of water quality parameters</p>
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <section className="border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+          <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-300">
+                <Database className="h-4 w-4" />
+                Firebase से जुड़ा लाइव डेटा
+              </div>
+              <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl">
+                Project Pragya
+              </h1>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">
+                मखाना किसानों और फील्ड टीम के लिए बनाया गया यह प्लेटफॉर्म पानी, मिट्टी, तालाब की स्थिति और सिफारिशों को एक साथ दिखाता है, ताकि 1 मिनट की जाँच के बाद किसान को सीधी उपयोगी सलाह मिल सके।
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  to="/dashboard"
+                  className="inline-flex items-center rounded-md bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-cyan-400"
+                >
+                  डैशबोर्ड खोलें
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+                <Link
+                  to="/about"
+                  className="inline-flex items-center rounded-md border border-slate-700 px-5 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-900"
+                >
+                  जानकारी देखें
+                </Link>
+              </div>
             </div>
-            <div className="bg-white/10 rounded-lg p-6 backdrop-blur-sm">
-              <BarChart3 className="h-10 w-10 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Data Visualization</h3>
-              <p className="text-blue-100">Interactive charts and historical data analysis</p>
-            </div>
-            <div className="bg-white/10 rounded-lg p-6 backdrop-blur-sm">
-              <CheckCircle className="h-10 w-10 mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Easy Access</h3>
-              <p className="text-blue-100">View data from any device with internet connection</p>
+
+            <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-md border border-slate-800 bg-slate-950/70 p-4">
+                  <Droplets className="h-6 w-6 text-cyan-300" />
+                  <p className="mt-3 text-sm text-slate-400">लाइव पानी डेटा</p>
+                  <p className="mt-1 text-2xl font-semibold text-white">pH, ORP, TDS</p>
+                </div>
+                <div className="rounded-md border border-slate-800 bg-slate-950/70 p-4">
+                  <Sprout className="h-6 w-6 text-emerald-300" />
+                  <p className="mt-3 text-sm text-slate-400">मिट्टी डेटा</p>
+                  <p className="mt-1 text-2xl font-semibold text-white">pH, EC, temp</p>
+                </div>
+                <div className="rounded-md border border-slate-800 bg-slate-950/70 p-4">
+                  <Leaf className="h-6 w-6 text-lime-300" />
+                  <p className="mt-3 text-sm text-slate-400">NPK डेटा</p>
+                  <p className="mt-1 text-2xl font-semibold text-white">N, P, K</p>
+                </div>
+                <div className="rounded-md border border-slate-800 bg-slate-950/70 p-4">
+                  <Activity className="h-6 w-6 text-violet-300" />
+                  <p className="mt-3 text-sm text-slate-400">फील्ड उपयोग</p>
+                  <p className="mt-1 text-2xl font-semibold text-white">लाइव + सलाह</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">How It Works</h2>
-        <div className="grid md:grid-cols-5 gap-6">
-          <div className="text-center">
-            <div className="bg-blue-100 rounded-full p-6 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-              <Droplet className="h-10 w-10 text-blue-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Sensors</h3>
-            <p className="text-sm text-gray-600">Measure water quality parameters</p>
-          </div>
-          <div className="text-center">
-            <div className="bg-green-100 rounded-full p-6 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-              <Activity className="h-10 w-10 text-green-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Arduino Nano</h3>
-            <p className="text-sm text-gray-600">Processes sensor data</p>
-          </div>
-          <div className="text-center">
-            <div className="bg-yellow-100 rounded-full p-6 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-              <Wifi className="h-10 w-10 text-yellow-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">ESP Device</h3>
-            <p className="text-sm text-gray-600">Transmits data wirelessly</p>
-          </div>
-          <div className="text-center">
-            <div className="bg-purple-100 rounded-full p-6 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-              <Database className="h-10 w-10 text-purple-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Firebase</h3>
-            <p className="text-sm text-gray-600">Cloud database storage</p>
-          </div>
-          <div className="text-center">
-            <div className="bg-red-100 rounded-full p-6 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-              <BarChart3 className="h-10 w-10 text-red-600" />
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Dashboard</h3>
-            <p className="text-sm text-gray-600">Real-time visualization</p>
-          </div>
+        <div className="grid gap-6 lg:grid-cols-3">
+          {pillars.map((pillar) => {
+            const Icon = pillar.icon;
+            return (
+              <div key={pillar.title} className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+                <div className="rounded-md border border-slate-800 bg-slate-950/70 p-3 w-fit">
+                  <Icon className="h-5 w-5 text-cyan-300" />
+                </div>
+                <h2 className="mt-4 text-xl font-semibold text-white">{pillar.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-300">{pillar.description}</p>
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Key Benefits</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { title: 'Improved Yield', desc: 'Maintain optimal conditions for maximum crop production' },
-            { title: 'Cost Savings', desc: 'Reduce losses from poor water quality issues' },
-            { title: 'Early Detection', desc: 'Identify problems before they impact your crop' },
-            { title: 'Data-Driven Decisions', desc: 'Make informed decisions based on real-time data' },
-            { title: 'Remote Monitoring', desc: 'Monitor your ponds from anywhere' },
-            { title: 'Historical Analysis', desc: 'Track trends and patterns over time' },
-          ].map((benefit, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <CheckCircle className="h-8 w-8 text-green-600 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">{benefit.title}</h3>
-              <p className="text-gray-600">{benefit.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg p-12 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">Ready to Optimize Your Makhana Yield?</h2>
-          <p className="text-xl mb-8 text-blue-100">
-            Start monitoring your pond water quality today
-          </p>
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center px-8 py-4 bg-white text-blue-600 text-lg font-semibold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
-          >
-            Go to Dashboard
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+            <h2 className="text-xl font-semibold text-white">किसान उपयोग के लिए क्या जरूरी है</h2>
+            <ul className="mt-4 space-y-3 text-sm text-slate-300">
+              <li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-300" />हर सेंसर रीडिंग का सरल अर्थ समझ में आए।</li>
+              <li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-300" />रीडिंग देखकर किसान क्या करे, इसका सीधा उत्तर मिले।</li>
+              <li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-300" />खेत/तालाब के क्षेत्रफल के आधार पर पोषक तत्व की मात्रा दिखे।</li>
+              <li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-300" />यह भी साफ लिखा हो कि अभी कौन सी चीजें नहीं मापी जा रहीं।</li>
+            </ul>
+          </div>
+          <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-6">
+            <h2 className="text-xl font-semibold text-white">मापन की वर्तमान सीमा</h2>
+            <p className="mt-4 text-sm leading-6 text-slate-300">
+              NPK महत्वपूर्ण है, लेकिन फसल की अच्छी वृद्धि केवल NPK पर निर्भर नहीं होती। सूक्ष्म पोषक तत्व और जैविक पदार्थ की जानकारी अभी सीधे नहीं मापी जा रही है। इसलिए यह सीमा किसान को साफ दिखाई जाती है।
+            </p>
+          </div>
         </div>
       </section>
     </div>

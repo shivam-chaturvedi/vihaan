@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
-import { ref, query, orderByChild, limitToLast, onValue } from 'firebase/database';
+import { useEffect, useState } from 'react';
+import { get, ref } from 'firebase/database';
 import { db } from '../firebase';
-import { SensorReading, SensorDataMap } from '../types';
+import { RawSensorReading, SensorDataMap, SensorReading } from '../types';
 import { getDisplayTimestampMs } from '../utils/formatTime';
 
 const LIVE_WINDOW_MS = 3 * 60 * 1000;
+const POLL_INTERVAL_MS = 2000;
+const MAX_READINGS = 120;
 
 function getLatestTimestamp(readings: SensorReading[]): number | null {
   if (readings.length === 0) {
@@ -29,78 +31,124 @@ function filterLiveReadings(readings: SensorReading[]): SensorReading[] {
   });
 }
 
+function toNullableNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function normalizeReading(pushId: string, reading: RawSensorReading): SensorReading | null {
+  if (!reading.deviceId || typeof reading.ts !== 'number') {
+    return null;
+  }
+
+  const waterPh = toNullableNumber(reading.water_ph ?? reading.ph);
+  const waterPhV = toNullableNumber(reading.water_ph_v ?? reading.ph_v);
+  const waterTemp = toNullableNumber(reading.water_temp_c ?? reading.temp_c);
+
+  return {
+    pushId,
+    deviceId: reading.deviceId,
+    ts: reading.ts,
+    raw: typeof reading.raw === 'string' ? reading.raw : '',
+    npk_valid: reading.npk_valid ?? null,
+    nitrogen: toNullableNumber(reading.nitrogen),
+    phosphorus: toNullableNumber(reading.phosphorus),
+    potassium: toNullableNumber(reading.potassium),
+    soil_ec: toNullableNumber(reading.soil_ec),
+    soil_moisture: toNullableNumber(reading.soil_moisture),
+    soil_ph: toNullableNumber(reading.soil_ph),
+    soil_temp_c: toNullableNumber(reading.soil_temp_c),
+    water_ph: waterPh,
+    water_ph_v: waterPhV,
+    water_temp_c: waterTemp,
+    orp_raw: toNullableNumber(reading.orp_raw),
+    orp: toNullableNumber(reading.orp),
+    tds: toNullableNumber(reading.tds),
+    turb_adc: toNullableNumber(reading.turb_adc),
+    turb: toNullableNumber(reading.turb),
+    turb_status: typeof reading.turb_status === 'string' ? reading.turb_status : null,
+    ph: waterPh,
+    ph_v: waterPhV,
+    temp_c: waterTemp,
+  };
+}
+
 export function useSensorData() {
   const [readings, setReadings] = useState<SensorReading[]>([]);
+  const [liveReadings, setLiveReadings] = useState<SensorReading[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const sensorDataRef = ref(db, 'sensorData');
-    const queryRef = query(
-      sensorDataRef,
-      orderByChild('ts'),
-      limitToLast(50)
-    );
+    let isMounted = true;
 
-    const unsubscribe = onValue(
-      queryRef,
-      (snapshot) => {
-        try {
-          const data = snapshot.val() as SensorDataMap | null;
-          
-          if (!data) {
-            setReadings([]);
-            setLoading(false);
-            return;
-          }
+    const fetchReadings = async () => {
+      try {
+        const sensorDataRef = ref(db, 'sensorData');
+        const snapshot = await get(sensorDataRef);
 
-          // Convert object map to array
-          const readingsArray: SensorReading[] = Object.entries(data).map(
-            ([pushId, reading]) => ({
-              ...reading,
-              pushId, // Add pushId for reference if needed
-            } as SensorReading & { pushId: string })
-          );
+        if (!isMounted) {
+          return;
+        }
 
-          // Sort by ts ascending for charts
-          readingsArray.sort((a, b) => a.ts - b.ts);
+        const data = snapshot.val() as SensorDataMap | null;
 
-          const liveReadings = filterLiveReadings(readingsArray);
-
-          setReadings(liveReadings);
+        if (!data) {
+          setReadings([]);
           setError(null);
-        } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-          setError(`Failed to process data: ${errorMessage}`);
-        } finally {
+          setLoading(false);
+          return;
+        }
+
+        const readingsArray = Object.entries(data)
+          .map(([pushId, reading]) => normalizeReading(pushId, reading))
+          .filter((reading): reading is SensorReading => reading !== null);
+
+        readingsArray.sort((a, b) => a.ts - b.ts);
+        const recentReadings = readingsArray.slice(-MAX_READINGS);
+
+        const currentLiveReadings = filterLiveReadings(recentReadings);
+        setReadings(recentReadings);
+        setLiveReadings(currentLiveReadings);
+        setError(null);
+      } catch (err) {
+        if (!isMounted) {
+          return;
+        }
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(`Failed to process data: ${errorMessage}`);
+      } finally {
+        if (isMounted) {
           setLoading(false);
         }
-      },
-      (err) => {
-        const errorMessage = err.message || 'Failed to fetch data';
-        setError(errorMessage);
-        setLoading(false);
       }
-    );
+    };
+
+    fetchReadings();
+    const intervalId = window.setInterval(fetchReadings, POLL_INTERVAL_MS);
 
     return () => {
-      unsubscribe();
+      isMounted = false;
+      window.clearInterval(intervalId);
     };
   }, []);
 
-  // Get latest live reading (maximum ts)
-  const latestReading = readings.length > 0
-    ? readings.reduce((latest, current) => 
-        current.ts > latest.ts ? current : latest
-      )
-    : null;
+  const latestReading =
+    readings.length > 0
+      ? readings.reduce((latest, current) => (current.ts > latest.ts ? current : latest))
+      : null;
 
-  // Get unique device IDs
-  const deviceIds = Array.from(new Set(readings.map(r => r.deviceId))).sort();
+  const latestLiveReading =
+    liveReadings.length > 0
+      ? liveReadings.reduce((latest, current) => (current.ts > latest.ts ? current : latest))
+      : null;
+
+  const deviceIds = Array.from(new Set(readings.map((r) => r.deviceId))).sort();
 
   return {
     readings,
+    liveReadings,
     latestReading,
+    latestLiveReading,
     deviceIds,
     loading,
     error,

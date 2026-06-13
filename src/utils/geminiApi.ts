@@ -1,92 +1,111 @@
 import { SensorReading } from '../types';
+import { formatDateTime } from './formatTime';
 
-export async function analyzeWithGemini(readings: SensorReading[]): Promise<string> {
+const GEMINI_MODEL = 'gemini-2.5-flash-lite';
+
+function average(values: Array<number | null>) {
+  const filtered = values.filter((value): value is number => value !== null);
+  return filtered.length > 0 ? filtered.reduce((sum, value) => sum + value, 0) / filtered.length : 0;
+}
+
+export async function analyzeWithGemini(
+  readings: SensorReading[],
+  latestTs?: number | null
+): Promise<string> {
   const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
   if (!geminiApiKey) {
     throw new Error('Missing VITE_GEMINI_API_KEY in .env');
   }
 
-  const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+  const geminiApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiApiKey}`;
 
-  // Prepare data summary for Gemini
-  const dataSummary = readings.map((r, idx) => ({
-    reading: idx + 1,
-    time: new Date(r.ts * 1000).toLocaleString(),
-    pH: r.ph?.toFixed(2) || 'N/A',
-    ORP: r.orp?.toFixed(2) || 'N/A',
-    TDS: r.tds?.toFixed(2) || 'N/A',
-    Turbidity: r.turb?.toFixed(2) || 'N/A',
-    Temperature: r.temp_c?.toFixed(2) || 'N/A',
-    Status: r.turb_status || 'N/A',
+  const dataSummary = readings.map((reading, index) => ({
+    reading: index + 1,
+    device: reading.deviceId,
+    time: formatDateTime(reading.ts, latestTs),
+    water_pH: reading.water_ph?.toFixed(2) || 'N/A',
+    soil_pH: reading.soil_ph?.toFixed(2) || 'N/A',
+    water_temp_c: reading.water_temp_c?.toFixed(2) || 'N/A',
+    soil_temp_c: reading.soil_temp_c?.toFixed(2) || 'N/A',
+    tds: reading.tds?.toFixed(2) || 'N/A',
+    turbidity: reading.turb?.toFixed(2) || 'N/A',
+    nitrogen: reading.nitrogen?.toFixed(2) || 'N/A',
+    phosphorus: reading.phosphorus?.toFixed(2) || 'N/A',
+    potassium: reading.potassium?.toFixed(2) || 'N/A',
+    npk_valid: reading.npk_valid ?? 'N/A',
+    status: reading.turb_status || 'N/A',
   }));
 
-  // Calculate averages
-  const phReadings = readings.filter(r => r.ph !== null);
-  const orpReadings = readings.filter(r => r.orp !== null);
-  const tdsReadings = readings.filter(r => r.tds !== null);
-  const turbReadings = readings.filter(r => r.turb !== null);
-  const tempReadings = readings.filter(r => r.temp_c !== null);
+  const prompt = `You are an agricultural advisor for makhana farming.
 
-  const avgPh = phReadings.length > 0 ? phReadings.reduce((sum, r) => sum + (r.ph || 0), 0) / phReadings.length : 0;
-  const avgOrp = orpReadings.length > 0 ? orpReadings.reduce((sum, r) => sum + (r.orp || 0), 0) / orpReadings.length : 0;
-  const avgTds = tdsReadings.length > 0 ? tdsReadings.reduce((sum, r) => sum + (r.tds || 0), 0) / tdsReadings.length : 0;
-  const avgTurb = turbReadings.length > 0 ? turbReadings.reduce((sum, r) => sum + (r.turb || 0), 0) / turbReadings.length : 0;
-  const avgTemp = tempReadings.length > 0 ? tempReadings.reduce((sum, r) => sum + (r.temp_c || 0), 0) / tempReadings.length : 0;
+You are reviewing live sensor values collected during a 1-minute field measurement from a makhana farming device. The device measures both water and soil parameters.
 
-  const prompt = `You are an agricultural water quality expert analyzing sensor data from a Makhana (Euryale ferox) pond farming system.
+Data summary:
+- Total readings: ${readings.length}
+- Average water pH: ${average(readings.map((r) => r.water_ph)).toFixed(2)}
+- Average soil pH: ${average(readings.map((r) => r.soil_ph)).toFixed(2)}
+- Average water temperature: ${average(readings.map((r) => r.water_temp_c)).toFixed(2)} C
+- Average soil temperature: ${average(readings.map((r) => r.soil_temp_c)).toFixed(2)} C
+- Average TDS: ${average(readings.map((r) => r.tds)).toFixed(2)}
+- Average turbidity: ${average(readings.map((r) => r.turb)).toFixed(2)}
+- Average nitrogen: ${average(readings.map((r) => r.nitrogen)).toFixed(2)}
+- Average phosphorus: ${average(readings.map((r) => r.phosphorus)).toFixed(2)}
+- Average potassium: ${average(readings.map((r) => r.potassium)).toFixed(2)}
 
-Analyze the following 1-minute water quality monitoring data and provide comprehensive insights:
-
-**Data Summary:**
-- Total Readings: ${readings.length}
-- Average pH: ${avgPh.toFixed(2)}
-- Average ORP: ${avgOrp.toFixed(2)} mV
-- Average TDS: ${avgTds.toFixed(2)} ppm
-- Average Turbidity: ${avgTurb.toFixed(2)} NTU
-- Average Temperature: ${avgTemp.toFixed(2)} °C
-
-**Individual Readings:**
+Individual readings:
 ${JSON.stringify(dataSummary, null, 2)}
 
-**Provide a detailed analysis including:**
-1. Overall water quality assessment
-2. Parameter-by-parameter analysis (pH, ORP, TDS, Turbidity, Temperature)
-3. Trends and patterns observed during the 1-minute period
-4. Recommendations for maintaining optimal pond conditions
-5. Any concerns or alerts based on the readings
-6. Specific guidance for Makhana farming
+Return a concise response with these exact sections:
+1. Overall condition
+2. Water analysis
+3. Soil analysis
+4. Nutrient analysis
+5. Farmer recommendation
+6. Pond advice
+7. Limitation
 
-Format your response in clear sections with headings. Be specific and actionable.`;
+Requirements:
+- Explain the meaning in simple language for a farmer.
+- Mention if the measured values suggest action is needed.
+- Mention that micronutrients and organic matter are not directly measured if true.
+- Keep the answer compact and practical.
+- Do not use markdown tables.`;
 
-  try {
-    const response = await fetch(geminiApiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+  const response = await fetch(geminiApiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.4,
+        topP: 0.9,
+        maxOutputTokens: 900,
       },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }]
-      }),
-    });
+    }),
+  });
 
-    if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    
-    if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-      return data.candidates[0].content.parts[0].text;
-    }
-    
-    throw new Error('Invalid response from Gemini API');
-  } catch (error) {
-    console.error('Gemini API Error:', error);
-    throw error;
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Gemini API error: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
   }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || '').join('').trim();
+
+  if (text) {
+    return text;
+  }
+
+  throw new Error('Invalid response from Gemini API');
 }

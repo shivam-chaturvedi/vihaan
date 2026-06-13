@@ -2,31 +2,48 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { SensorReading } from '../types';
 import { formatDateTime } from './formatTime';
+import {
+  AreaUnit,
+  buildAssessmentReport,
+  PondType,
+} from './makhanaRecommendations';
+
+function average(values: Array<number | null>) {
+  const filtered = values.filter((value): value is number => value !== null);
+  return filtered.length > 0 ? filtered.reduce((sum, value) => sum + value, 0) / filtered.length : null;
+}
+
+function formatValue(value: number | null, suffix = '') {
+  return value === null ? 'N/A' : `${value.toFixed(2)}${suffix}`;
+}
 
 export function generateInsightsPdf(
   readings: SensorReading[],
   geminiInsights: string,
-  latestTs?: number | null
+  latestTs?: number | null,
+  reportConfig?: {
+    latestReading: SensorReading | null;
+    pondType: PondType;
+    areaValue: number;
+    areaUnit: AreaUnit;
+  }
 ): void {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 20;
   let yPos = margin;
 
-  // Title
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('Water Quality Analysis Report', pageWidth / 2, yPos, { align: 'center' });
+  doc.text('Field Telemetry Analysis Report', pageWidth / 2, yPos, { align: 'center' });
   yPos += 10;
 
-  // Date
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100, 100, 100);
   doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth / 2, yPos, { align: 'center' });
   yPos += 15;
 
-  // Summary Section
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
@@ -35,30 +52,62 @@ export function generateInsightsPdf(
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  
-  const avgPh = readings.reduce((sum, r) => sum + (r.ph || 0), 0) / readings.filter(r => r.ph !== null).length;
-  const avgOrp = readings.reduce((sum, r) => sum + (r.orp || 0), 0) / readings.filter(r => r.orp !== null).length;
-  const avgTds = readings.reduce((sum, r) => sum + (r.tds || 0), 0) / readings.filter(r => r.tds !== null).length;
-  const avgTurb = readings.reduce((sum, r) => sum + (r.turb || 0), 0) / readings.filter(r => r.turb !== null).length;
-  const avgTemp = readings.reduce((sum, r) => sum + (r.temp_c || 0), 0) / readings.filter(r => r.temp_c !== null).length;
 
   const summaryText = [
     `Total Readings: ${readings.length}`,
-    `Average pH: ${avgPh.toFixed(2)}`,
-    `Average ORP: ${avgOrp.toFixed(2)} mV`,
-    `Average TDS: ${avgTds.toFixed(2)} ppm`,
-    `Average Turbidity: ${avgTurb.toFixed(2)} NTU`,
-    `Average Temperature: ${avgTemp.toFixed(2)} °C`,
+    `Average Water pH: ${formatValue(average(readings.map((r) => r.water_ph)))}`,
+    `Average Soil pH: ${formatValue(average(readings.map((r) => r.soil_ph)))}`,
+    `Average Water Temperature: ${formatValue(average(readings.map((r) => r.water_temp_c)), ' °C')}`,
+    `Average TDS: ${formatValue(average(readings.map((r) => r.tds)), ' ppm')}`,
+    `Average Turbidity: ${formatValue(average(readings.map((r) => r.turb)), ' NTU')}`,
+    `Average Nitrogen: ${formatValue(average(readings.map((r) => r.nitrogen)))}`,
+    `Average Phosphorus: ${formatValue(average(readings.map((r) => r.phosphorus)))}`,
+    `Average Potassium: ${formatValue(average(readings.map((r) => r.potassium)))}`,
   ];
 
-  summaryText.forEach(line => {
+  summaryText.forEach((line) => {
     doc.text(line, margin + 5, yPos);
     yPos += 6;
   });
 
   yPos += 5;
 
-  // Data Table
+  if (reportConfig) {
+    const report = buildAssessmentReport(
+      reportConfig.latestReading,
+      reportConfig.pondType,
+      reportConfig.areaValue,
+      reportConfig.areaUnit
+    );
+
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Assessment Report', margin, yPos);
+    yPos += 8;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const reportLines = [
+      report.headline,
+      report.summary,
+      `Pond type: ${reportConfig.pondType === 'natural' ? 'Natural' : 'Human-made'}`,
+      `Area: ${reportConfig.areaValue.toFixed(2)} ${reportConfig.areaUnit}`,
+      ...report.nutrientLines,
+      ...report.recommendationLines.slice(0, 4),
+    ];
+
+    reportLines.forEach((line) => {
+      const splitText = doc.splitTextToSize(line, pageWidth - margin * 2);
+      splitText.forEach((textLine: string) => {
+        doc.text(textLine, margin + 5, yPos);
+        yPos += 5;
+      });
+      yPos += 1;
+    });
+
+    yPos += 4;
+  }
+
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.text('Sensor Readings', margin, yPos);
@@ -67,47 +116,46 @@ export function generateInsightsPdf(
   const tableData = readings.map((reading, idx) => [
     (idx + 1).toString(),
     formatDateTime(reading.ts, latestTs),
-    reading.ph?.toFixed(2) || 'N/A',
-    reading.orp?.toFixed(2) || 'N/A',
-    reading.tds?.toFixed(2) || 'N/A',
-    reading.turb?.toFixed(2) || 'N/A',
-    reading.temp_c?.toFixed(2) || 'N/A',
-    reading.turb_status || 'N/A',
+    reading.deviceId,
+    formatValue(reading.water_ph),
+    formatValue(reading.soil_ph),
+    formatValue(reading.tds),
+    formatValue(reading.turb),
+    formatValue(reading.water_temp_c),
+    formatValue(reading.nitrogen),
+    formatValue(reading.phosphorus),
+    formatValue(reading.potassium),
   ]);
 
   autoTable(doc, {
     startY: yPos,
-    head: [['#', 'Time', 'pH', 'ORP (mV)', 'TDS (ppm)', 'Turbidity (NTU)', 'Temp (°C)', 'Status']],
+    head: [['#', 'Time', 'Device', 'Water pH', 'Soil pH', 'TDS', 'Turb', 'Water Temp', 'N', 'P', 'K']],
     body: tableData,
     theme: 'striped',
-    headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold' },
+    headStyles: { fillColor: [8, 145, 178], textColor: 255, fontStyle: 'bold' },
     styles: { fontSize: 8 },
     margin: { left: margin, right: margin },
   });
 
   yPos = (doc as any).lastAutoTable.finalY + 15;
 
-  // Insights Section
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   doc.text('AI Analysis & Insights', margin, yPos);
   yPos += 8;
 
-  // Split Gemini insights into paragraphs and add to PDF
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  
-  const insightsLines = geminiInsights.split('\n').filter(line => line.trim());
+
+  const insightsLines = geminiInsights.split('\n').filter((line) => line.trim());
   const maxWidth = pageWidth - 2 * margin;
-  
-  insightsLines.forEach(line => {
-    // Check if we need a new page
+
+  insightsLines.forEach((line) => {
     if (yPos > doc.internal.pageSize.getHeight() - 30) {
       doc.addPage();
       yPos = margin;
     }
 
-    // Handle headings (lines starting with # or **)
     if (line.trim().startsWith('#') || (line.trim().startsWith('**') && line.trim().endsWith('**'))) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
@@ -117,7 +165,6 @@ export function generateInsightsPdf(
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
     } else {
-      // Regular text - split if too long
       const splitText = doc.splitTextToSize(line.trim(), maxWidth);
       splitText.forEach((textLine: string) => {
         if (yPos > doc.internal.pageSize.getHeight() - 30) {
@@ -131,21 +178,16 @@ export function generateInsightsPdf(
     }
   });
 
-  // Footer
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(
-      `Page ${i} of ${totalPages} - Water Quality Monitoring System`,
-      pageWidth / 2,
-      doc.internal.pageSize.getHeight() - 10,
-      { align: 'center' }
-    );
+    doc.text(`Page ${i} of ${totalPages} - Makhana Farming Website`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, {
+      align: 'center',
+    });
   }
 
-  // Save PDF
-  const fileName = `water-quality-analysis-${new Date().toISOString().split('T')[0]}.pdf`;
+  const fileName = `field-telemetry-analysis-${new Date().toISOString().split('T')[0]}.pdf`;
   doc.save(fileName);
 }
